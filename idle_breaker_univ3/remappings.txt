@@ -1,0 +1,7 @@
+forge-std/=lib/forge-std/src/
+ERC6551/=lib/reference/src/
+@openzeppelin/=lib/openzeppelin-contracts/
+@v3-core/=lib/v3-core/contracts/
+@v3-periphery/=lib/v3-periphery/contracts/
+@uniswap/v3-core/=lib/v3-core/
+@uniswap/v3-periphery/=lib/v3-periphery/

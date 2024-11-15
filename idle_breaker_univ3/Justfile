@@ -1,0 +1,364 @@
+RPC_URL := 'https://sepolia.unichain.org'
+DAI_ADDR := '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
+
+USDC_ADDR := '0x65cbd6B0c3282BA6FB86a72d4f2361b02E5A710D'
+WETH_ADDR := '0x848D91e44c486bdeb20E69dfaB28071a6DAE5203'
+# uniswap v3
+V3_FACTORY_ADDR := '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+NONFUNGIBLE_POSITION_MANAGER_ADDR := '0xB7F724d6dDDFd008eFf5cc2834edDE5F9eF0d075'
+LIQUIDITY_EXAMPLES_ADDR := '0x4A679253410272dd5232B3Ff7cF5dbB88f295319'
+USER := '0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7'
+USER2 := '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+SWAP_ROUTER02 := '0x0B306BF915C4d645ff596e518fAf3F9669b97016'
+ERC20_SAVING := '0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8'
+
+
+start_anvil:
+    anvil --hardfork prague --steps-tracing --preserve-historical-states  --state ./state.json
+
+
+deploy_USDC:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/FakeUSDC.sol:FakeUSDC \
+        --constructor-args "IAMUSDC" "USDC"
+
+deploy_weth9:
+    forge create  --rpc-url {{RPC_URL}} \
+    --private-key ${KEY_ACCOUNT1} \
+    src/WETH9.sol:WETH9
+
+deploy_DAI:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/MintableERC20.sol:MintableERC20 \
+        --constructor-args "DAI stablecoin" "DAI"
+
+
+deploy_uniswapv3:
+    rm -rf /Users/kbe/portto/7702/deploy-v3/state.json && \
+    cd /Users/kbe/portto/7702/deploy-v3 && \
+    yarn start  -pk 0x${KEY_ACCOUNT1} -j http://localhost:8545 \
+    -w9 "{{WETH_ADDR}}" \
+    -ncl ETH \
+    -o "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" \
+    -c 1
+
+deploy_uniswapv3_liquidity:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/UniswapV3Liquidity.sol:UniswapV3Liquidity
+
+deploy_liquidity_examples:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/LiquidityExamples.sol:LiquidityExamples \
+        --constructor-args {{NONFUNGIBLE_POSITION_MANAGER_ADDR}}
+
+deploy_swap_example:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/SwapExamples.sol:SwapExamples \
+        --constructor-args {{SWAP_ROUTER02}}
+
+
+deploy_swap_rounter:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/SwapRouter.sol:SwapRouter \
+        --constructor-args {{V3_FACTORY_ADDR}} {{WETH_ADDR}}    
+
+deploy_ERC20Saving:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        src/ERC20Saving.sol:ERC20Saving \
+        --constructor-args  {{USDC_ADDR}}
+
+block_number:
+    curl -X POST {{RPC_URL}} \
+        -H "Content-Type: application/json" \
+        -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+
+
+
+weth_deposit:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        {{WETH_ADDR}} \
+        "deposit()" \
+        --value 1000ether
+
+
+weth_deposit_user_2:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1_2} \
+        {{WETH_ADDR}} \
+        "deposit()" \
+        --value 1000ether
+
+weth_balance:
+    cast balance --rpc-url {{RPC_URL}} \
+        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+        --erc20 {{WETH_ADDR}}
+
+dai_mint:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        {{DAI_ADDR}} \
+        "mint(address,uint256)" \
+         {{USER}} 10000ether
+
+dai_balance:
+    cast balance --rpc-url {{RPC_URL}} \
+        {{USER}} \
+        --erc20 {{DAI_ADDR}}
+
+# 1000ether = 1000*10^18 / 10^6 = 1000*10^12 = 1000000000000 USDC
+usdc_mint:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        {{USDC_ADDR}} \
+        "mint(address,uint256)" \
+         {{USER}} 1000ether 
+weth9_mint:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        {{WETH_ADDR}} \
+        "mint(address,uint256)" \
+         {{USER}} 100000000ether 
+
+usdc_mint_user_2:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        {{USDC_ADDR}} \
+        "mint(address,uint256)" \
+         {{USER2}} 1000ether     
+
+usdc_mint_saving:
+    cast send --rpc-url {{RPC_URL}} \
+        --private-key ${KEY_ACCOUNT1} \
+        {{USDC_ADDR}} \
+        "mint(address,uint256)" \
+         {{ERC20_SAVING}} 1000ether     
+
+usdc_balance:
+    cast balance --rpc-url {{RPC_URL}} \
+       {{USER}} \
+        --erc20 {{USDC_ADDR}}
+
+
+usdc_balance_2:
+    cast balance --rpc-url {{RPC_URL}} \
+       {{USER2}} \
+        --erc20 {{USDC_ADDR}}
+
+
+uni3_create_pool:
+    forge script \
+        script/UniV3ToolsUnichain.sol:UniV3ToolsUnichain \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        --sig "createPool()" \
+        -vvv  \
+        --broadcast 
+
+
+# 250000000000 = 250_000.000_000 with 100ether = 2500 USDC / 1ETH
+uni3_add_liquidity_long_range:
+    forge script \
+        script/UniV3ToolsUnichain.sol:UniV3ToolsUnichain \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        --sig "addLiquidity(uint256 amountUSDC,uint256 amountETH, address recipient)" 100000000000 50ether {{USER}} \
+        -vvvv  \
+        --broadcast 
+
+# 25000000000 = 25_000_000_000 with 10ether = 2500 USDC / 1ETH
+uni3_add_liquidity_short_range:
+    forge script \
+        script/UniV3Tools.sol:UniV3Tools \
+        --private-key ${KEY_ACCOUNT1_2} \
+        --rpc-url {{RPC_URL}} \
+        --sig "addLiquidity(uint256 amountUSDC,uint256 amountETH, uint16 multi)" 25000000000 10ether 10 \
+        -vvvv  \
+        --broadcast 
+
+# 25000000000 = 25_000_000_000 with 10ether
+uni3_add_liquidity_my_v3minter:
+    forge script \
+        script/UniV3Tools.sol:UniV3Tools \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        --sig "addLiquidityMyCB(uint256 amountUSDC,uint256 amountETH)" 25000000000 10ether \
+        -vvvv  \
+        --broadcast 
+
+# ret: 0x0000000000000000000000003afae72c90160d8777b5d8eb7f2fc6a96cb75cd3
+uni3_getpool:
+    cast call --rpc-url {{RPC_URL}} \
+        {{V3_FACTORY_ADDR}} \
+        "getPool(address,address,uint24)" {{WETH_ADDR}} {{USDC_ADDR}} 500
+
+uni3_getpool_from_router:
+    cast call --rpc-url {{RPC_URL}} \
+        {{SWAP_ROUTER02}} \
+        "getPool(address,address,uint24)" {{WETH_ADDR}} {{USDC_ADDR}} 500
+
+
+
+uni3_slot0:
+    OUTPUT=$(cast call --rpc-url {{RPC_URL}} \
+        0x3afae72c90160d8777b5d8eb7f2fc6a96cb75cd3 \
+        "slot0()") && \
+        cast abi-decode "slot0()(uint160,int24,uint16,uint16,uint16,uint8,bool)" $OUTPUT
+
+# function slot0()
+#         external
+#         view
+#         returns (
+#             uint160 sqrtPriceX96,
+#             int24 tick,
+#             uint16 observationIndex,
+#             uint16 observationCardinality,
+#             uint16 observationCardinalityNext,
+#             uint8 feeProtocol,
+#             bool unlocked
+#         );
+        
+
+get_univ3_token_id:
+    cast call --rpc-url {{RPC_URL}} \
+        {{NONFUNGIBLE_POSITION_MANAGER_ADDR}} \
+        "tokenOfOwnerByIndex(address,uint256)" \
+        {{USER}} 0
+
+
+get_balanceOf:
+    cast call --rpc-url {{RPC_URL}} \
+        {{NONFUNGIBLE_POSITION_MANAGER_ADDR}} \
+        "balanceOf(address)" {{USER}}
+
+get_ownerOf:
+    cast call --rpc-url {{RPC_URL}} \
+        {{NONFUNGIBLE_POSITION_MANAGER_ADDR}} \
+        "ownerOf(uint256)" 1
+
+
+get_position_info:
+    R=$(cast call --rpc-url {{RPC_URL}} \
+        {{NONFUNGIBLE_POSITION_MANAGER_ADDR}} \
+        "positions(uint256)" ${TOKEN_ID}) && \
+    cast abi-decode "positions(uint256)(uint96,address,address,address,uint24,int24,int24,uint128,uint256,uint256,uint128,uint128)" $R
+
+get_position_info_user2:
+    R=$(cast call --rpc-url {{RPC_URL}} \
+        {{NONFUNGIBLE_POSITION_MANAGER_ADDR}} \
+        "positions(uint256)" 2) && \
+    cast abi-decode "positions(uint256)(uint96,address,address,address,uint24,int24,int24,uint128,uint256,uint256,uint128,uint128)" $R
+
+
+# struct Position {
+#         // the nonce for permits
+#         uint96 nonce;
+#         // the address that is approved for spending this token
+#         address operator;
+#         // the ID of the pool with which this token is connected
+#         uint80 poolId;
+#         // the tick range of the position
+#         int24 tickLower;
+#         int24 tickUpper;
+#         // the liquidity of the position
+#         uint128 liquidity;
+#         // the fee growth of the aggregate position as of the last action on the individual position
+#         uint256 feeGrowthInside0LastX128;
+#         uint256 feeGrowthInside1LastX128;
+#         // how many uncollected tokens are owed to the position, as of the last computation
+#         uint128 tokensOwed0;
+#         uint128 tokensOwed1;
+#     }
+
+
+get_tick_price:
+    forge script \
+        script/UniV3ToolsUnichain.sol:UniV3ToolsUnichain \
+         --sig "getTickPrice(int24 tick)" 197070
+
+# 198079 is now tick
+# 399973827 is result
+# 1/(399973827/10^18*10^6) = 2500 USDC
+
+get_tick_eth_price:
+    forge script \
+        script/UniV3Tools.sol:UniV3Tools \
+         --sig "getTick_ETH_USDC_Price(int24 tick)" 197970
+
+eth_price:
+    forge script \
+        --rpc-url {{RPC_URL}} \
+        script/UniV3Tools.sol:UniV3Tools \
+         --sig "ethPrice()"
+
+
+# 50000000000 = 50_000.000_000 USDC
+swap_70000_usdc_to_eth:
+    forge script \
+        --rpc-url {{RPC_URL}} \
+        script/UniV3Tools.sol:UniV3Tools \
+        --private-key ${KEY_ACCOUNT1} \
+         --sig "swapUSDCForWETH(uint256 amountIn)" 70000000000 \
+         --broadcast
+        
+
+swap_70_usdc_to_eth:
+    forge script \
+        --rpc-url {{RPC_URL}} \
+        script/UniV3ToolsUnichain.sol:UniV3ToolsUnichain \
+        --private-key ${KEY_ACCOUNT1} \
+        --sig "swapUSDCForWETH(uint256 amountIn)" 70000000 \
+        --broadcast
+
+# 50000000000 = 10_000.000_000 USDC
+swap_10000_usdc_to_eth:
+    forge script \
+        --rpc-url {{RPC_URL}} \
+        script/UniV3Tools.sol:UniV3Tools \
+        --private-key ${KEY_ACCOUNT1} \
+         --sig "swapUSDCForWETH(uint256 amountIn)" 10000000000 \
+         --broadcast
+
+
+remove_all_liquidity:
+    forge script \
+        --rpc-url {{RPC_URL}} \
+        script/UniV3Tools.sol:UniV3Tools \
+        --private-key ${KEY_ACCOUNT1_2} \
+         --sig "removeAllLiquidity(uint256 tokenId)" 2 \
+         --broadcast
+
+
+saving_approve:
+    cast send --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        {{USDC_ADDR}} "approve(address,uint256)" {{ERC20_SAVING}} 1000ether
+
+saving_supply:
+    cast send --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        {{ERC20_SAVING}} \
+        "supply(uint256)" 90000000000 
+
+saving_supply_amount:
+    cast call --rpc-url {{RPC_URL}} \
+        {{ERC20_SAVING}} "deposits(address)(uint256,uint256)" {{USER}}
+
+saving_calculateInterest:
+    cast call --rpc-url {{RPC_URL}} \
+        {{ERC20_SAVING}} "calculateInterest(address)(uint256)" {{USER}}
+
+      
+
+
+blockscout_logs:
+    curl -X 'GET' \
+    'https://unichain-sepolia.blockscout.com/api/v2/addresses/0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7/tokens?type=ERC-721' \
+    -H 'accept: application/json' | jq .
