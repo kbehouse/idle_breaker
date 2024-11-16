@@ -356,6 +356,23 @@ saving_calculateInterest:
         {{ERC20_SAVING}} "calculateInterest(address)(uint256)" {{USER}}
 
       
+verify_ERC20_SAVING:
+    forge verify-contract \
+        --chain-id 1301 \
+        --verifier-url 'https://unichain-sepolia.blockscout.com/api' \
+        --watch \
+        --verifier blockscout \
+        {{ERC20_SAVING}} \
+        src/ERC20Saving.sol:ERC20Saving
+
+verify_ERC20_SAVING_2:
+    forge verify-contract \
+        {{ERC20_SAVING}} \
+        src/ERC20Saving.sol:ERC20Saving \
+        --verifier blockscout \
+        --verifier-url https://unichain-sepolia.blockscout.com/api  \
+        --api-key $OKLINK_API_KEY
+
 
 
 blockscout_logs:
