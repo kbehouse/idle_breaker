@@ -1,0 +1,58 @@
+RPC_URL := 'http://127.0.0.1:8545'
+SWAP_ROUTER02 := '0x0B306BF915C4d645ff596e518fAf3F9669b97016' 
+POOL_SWAP_TEST_ADDR := '0x7a2088a1bFc9d81c55368AE168C2C02570cB814F'
+KEY := env_var('KEY_ACCOUNT1')
+V4OnV3Router := '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
+HOOK_ADDR := '0xD760B02dD1132c40E54D84009704236886120040'
+USDC_ADDR := '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+WETH_ADDR := '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
+USER := '0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7'
+# V4
+POOL_MANAGER  := '0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44'
+NONFUNGIBLE_POSITION_MANAGER_ADDR := '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
+
+
+deploy_v4:
+    forge script \
+        script/Anvil-DeployV4.s.sol:DeployV4 \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        -vvv  \
+        --broadcast 
+
+deploy_afterswap_hook:
+    forge script \
+        script/DeployAfterswapHook.s.sol:DeployAfterswapHook \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        --sig 'deployAfterswapHook()' \
+        -vvv  \
+        --broadcast 
+
+deploy_V4OnV3Router:
+    forge create  --rpc-url {{RPC_URL}} \
+        --private-key {{KEY}} \
+        src/V4OnV3Router.sol:V4OnV3Router \
+        --constructor-args {{SWAP_ROUTER02}} {{POOL_SWAP_TEST_ADDR}}
+
+
+deploy_V4Pool:
+    forge script \
+        script/DeployAfterswapHook.s.sol:DeployAfterswapHook \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        --sig 'initV4Pool(address manager, address hook, uint24 fee, address token0, address token1)' \
+        {{POOL_MANAGER}} {{HOOK_ADDR}} 500 {{USDC_ADDR}} {{WETH_ADDR}} \
+        -vvv  \
+        --broadcast
+
+
+play_swap:
+    forge script \
+        script/V4OnV3Router.s.sol:V4OnV3RouterScript \
+        --private-key ${KEY_ACCOUNT1} \
+        --rpc-url {{RPC_URL}} \
+        --sig 'playSwap( address token0, address token1)' \
+        {{USDC_ADDR}} {{WETH_ADDR}} \
+        -vvv  \
+        --broadcast
