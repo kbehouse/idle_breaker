@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Globe } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAccount } from "wagmi";
 import { useEffect } from "react";
 import Header from "@/components/layout/header";
@@ -11,7 +10,7 @@ import { redirect } from "next/navigation";
 import useViewTransition from "@/hooks/useViewTransition";
 import HexagonButton from "@/app/_components/HexagonButton";
 import Liquidity from "@/app/_components/Liquidity";
-
+import Lending from "@/app/_components/Lending";
 
 export default function Web3Interface() {
   const { isConnected } = useAccount();
@@ -69,30 +68,7 @@ export default function Web3Interface() {
                   {activeView === "liquidity" && <Liquidity />}
 
                   {activeView === "lending" && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <Card className="bg-gradient-to-br from-blue-600 to-purple-600 text-white">
-                        <CardContent className="p-6">
-                          <h3 className="text-lg font-semibold mb-2">Supply</h3>
-                          <p className="text-3xl font-bold">$1,750,000</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-gradient-to-br from-green-500 to-teal-500 text-white">
-                        <CardContent className="p-6">
-                          <h3 className="text-lg font-semibold mb-2">
-                            Interest Rate
-                          </h3>
-                          <p className="text-3xl font-bold">+12.5%</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white">
-                        <CardContent className="p-6">
-                          <h3 className="text-lg font-semibold mb-2">
-                            Interest
-                          </h3>
-                          <p className="text-3xl font-bold">$523,890</p>
-                        </CardContent>
-                      </Card>
-                    </div>
+                    <Lending />
                   )}
                 </motion.div>
               </AnimatePresence>

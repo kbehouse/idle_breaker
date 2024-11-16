@@ -18,8 +18,6 @@ export default function Liquidity() {
   if (error) return <div>Error loading data</div>
   if (!data) return <div>No data available</div>
 
-  console.log('data',data);
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {data.items.map((item) => (
