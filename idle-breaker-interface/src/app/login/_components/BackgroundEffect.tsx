@@ -4,10 +4,11 @@ import { useRef, useEffect } from "react"
 import * as THREE from "three"
 
 const BackgroundEffect = () => {
-  const mountRef = useRef(null)
+  const mountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!mountRef.current) return
+    const mount = mountRef.current
+    if (!mount) return
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -15,7 +16,7 @@ const BackgroundEffect = () => {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setSize(window.innerWidth, window.innerHeight)
-    mountRef.current.appendChild(renderer.domElement)
+    mount.appendChild(renderer.domElement)
 
     // Create crystal
     const geometry = new THREE.IcosahedronGeometry(3, 1)
@@ -42,7 +43,7 @@ const BackgroundEffect = () => {
     const mouse = new THREE.Vector2()
     const targetRotation = new THREE.Vector2()
 
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: MouseEvent) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
@@ -82,7 +83,9 @@ const BackgroundEffect = () => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('resize', handleResize)
-      mountRef.current.removeChild(renderer.domElement)
+      if (mount) {
+        mount.removeChild(renderer.domElement)
+      }
     }
   }, [])
 
