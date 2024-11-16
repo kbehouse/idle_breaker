@@ -5,9 +5,10 @@ import type { NFTResponse } from "@/app/type";
 import CardInfo from "./CardInfo";
 import NonfungiblePositionManager from "@/abi/NonfungiblePositionManager";
 import { useReadContracts } from "wagmi";
+import { useMemo } from "react";
 
 export default function Liquidity() {
-  const { data, isLoading, error } = useQuery<NFTResponse>({
+  const { data, error } = useQuery<NFTResponse>({
     queryKey: ["nfts"],
     queryFn: () =>
       fetch(`/api/collections/0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7`).then(
@@ -33,15 +34,34 @@ export default function Liquidity() {
       staleTime: 10000,
     },
   });
-  console.log("positions", positions, positionsLoading);
 
-  if (isLoading) return <div>Loading...</div>;
+  const filterData = useMemo(() => {
+    const zeroPotionIndexes = positions
+      ?.map((position, index) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (position?.result as any)[7] === 0n ? index : null
+      )
+      .filter((index) => index !== null);
+
+    const items = data?.items.map((item) => {
+      const { token_instances } = item;
+      return {
+        ...item,
+        token_instances: token_instances.filter(
+          (instance, index) => !zeroPotionIndexes?.includes(index)
+        ),
+      };
+    });
+    return { items: items ?? [] };
+  }, [data?.items, positions]);
+
+  if (positionsLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {data.items.map((item) =>
+      {filterData.items.map((item) =>
         item.token_instances.map((instance) => (
           <CardInfo
             key={instance.id}
