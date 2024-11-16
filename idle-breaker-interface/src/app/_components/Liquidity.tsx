@@ -6,14 +6,15 @@ import CardInfo from "./CardInfo";
 import NonfungiblePositionManager from "@/abi/NonfungiblePositionManager";
 import { useReadContracts } from "wagmi";
 import { useMemo } from "react";
+import { useAccount } from "wagmi";
 
 export default function Liquidity() {
+  const { address } = useAccount();
   const { data, error } = useQuery<NFTResponse>({
     queryKey: ["nfts"],
+    enabled: !!address,
     queryFn: () =>
-      fetch(`/api/collections/0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7`).then(
-        (res) => res.json()
-      ),
+      fetch(`/api/collections/${address}`).then((res) => res.json()),
   });
 
   const tokenIds =
@@ -57,7 +58,7 @@ export default function Liquidity() {
 
   if (positionsLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading data</div>;
-  if (!data) return <div>No data available</div>;
+  if (!filterData.items.length) return <div>No data available</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

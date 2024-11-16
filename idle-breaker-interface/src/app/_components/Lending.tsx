@@ -3,18 +3,21 @@ import { useReadContract } from "wagmi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatAmount } from "@/lib/utils";
 import ERC20SavingABI from "@/abi/ERC20SavingABI";
+import { useAccount } from "wagmi";
 
 const Lending = () => {
+  const { address } = useAccount();
 
   const { data: depositAmount, isLoading } = useReadContract({
     address: "0xf8915e6896FB575a95246793b150C56e2666dA11",
     abi: ERC20SavingABI,
     functionName: "deposits",
-    args: ["0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7"], // TODO: user address
+    args: [address ?? "0x0"],
     query: {
       retry: 3,
       retryDelay: 1500,
       staleTime: 10000,
+      enabled: !!address,
     },
   });
 
@@ -22,11 +25,12 @@ const Lending = () => {
     address: "0xf8915e6896FB575a95246793b150C56e2666dA11",
     abi: ERC20SavingABI,
     functionName: "calculateInterest",
-    args: ["0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7"], // TODO: user address
+    args: [address ?? "0x0"],
     query: {
       retry: 3,
       retryDelay: 1500,
       staleTime: 10000,
+      enabled: !!address,
     },
   });
 

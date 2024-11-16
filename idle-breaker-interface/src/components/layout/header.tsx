@@ -16,8 +16,8 @@ const Header = () => {
         alt="Logo"
         width={80}
         height={80}
-        className="mr-[20px]"
-        />
+        className="mr-[20px] transition-transform duration-700 hover:rotate-[360deg] hover:scale-110"
+      />
       <ConnectButton />
     </motion.div>
   );
