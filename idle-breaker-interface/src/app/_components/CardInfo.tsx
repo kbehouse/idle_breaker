@@ -24,7 +24,7 @@ export default function CardInfo({
   return (
     <div className="flex gap-4 bg-gray-800 bg-opacity-30 backdrop-filter backdrop-blur-lg rounded-3xl p-6 shadow-2xl">
       <Link href={explorerUrl} target="_blank" rel="noopener noreferrer">
-        <Card className="relative w-[300px] h-[510px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-800 overflow-hidden rounded-[40px] transition-transform duration-300 hover:scale-105 cursor-pointer">
+        <Card className="relative w-[200px] h-[350px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-800 overflow-hidden rounded-[40px] transition-transform duration-300 hover:scale-105 cursor-pointer">
           <div
             className="relative p-4 flex justify-between items-start h-full bg-no-repeat bg-cover bg-center"
             style={{ backgroundImage: `url(${image_url || ""})` }}
