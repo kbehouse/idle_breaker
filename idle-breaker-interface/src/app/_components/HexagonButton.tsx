@@ -36,7 +36,7 @@ const HexagonButton = ({ icon: Icon, label, onClick, isActive }: HexagonButtonPr
     </svg>
     <div className="absolute inset-0 flex flex-col items-center justify-center">
       <Icon className="w-8 h-8 mb-2" />
-      <span className="text-xs">{label}</span>
+      <span className="text-xs mb-2">{label}</span>
     </div>
   </motion.button>
 );

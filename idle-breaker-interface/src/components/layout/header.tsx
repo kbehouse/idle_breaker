@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-
+import Image from "next/image";
 const Header = () => {
   return (
     <motion.div
@@ -11,9 +11,13 @@ const Header = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-        IDLE BREAKER
-      </h1>
+      <Image
+        src="/logo.png"
+        alt="Logo"
+        width={80}
+        height={80}
+        className="mr-[20px] transition-transform duration-500 ease-in-out hover:rotate-180 cursor-pointer"
+        />
       <ConnectButton />
     </motion.div>
   );
