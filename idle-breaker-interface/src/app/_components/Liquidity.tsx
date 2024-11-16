@@ -18,8 +18,8 @@ export default function Liquidity() {
   });
 
   const tokenIds =
-    data?.items.flatMap((item) =>
-      item.token_instances.map((instance) => BigInt(instance.id))
+    data?.items?.flatMap((item) =>
+      item?.token_instances.map((instance) => BigInt(instance?.id))
     ) || [];
 
   const { data: positions, isLoading: positionsLoading } = useReadContracts({
