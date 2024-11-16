@@ -2,24 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useReadContract } from "wagmi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatAmount } from "@/lib/utils";
-
-const ERC20SavingABI = [
-  {
-    inputs: [{ type: "address", name: "account" }],
-    name: "deposits",
-    outputs: [{ type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ type: "address", name: "account" }],
-    name: "calculateInterest",
-    outputs: [{ type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
-
+import ERC20SavingABI from "@/abi/ERC20SavingABI";
 
 const Lending = () => {
 

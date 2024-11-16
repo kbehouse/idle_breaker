@@ -3,6 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import type { NFTResponse } from '@/app/type'
 import CardInfo from "./CardInfo";
+import NonfungiblePositionManager from "@/abi/NonfungiblePositionManager";
+import { useReadContracts } from "wagmi";
 
 
 export default function Liquidity() {
@@ -14,9 +16,30 @@ export default function Liquidity() {
         .then((res) => res.json()),
   })
 
+  const tokenIds = data?.items.flatMap(item => 
+    item.token_instances.map(instance => BigInt(instance.id))
+  ) || [];
+
+  const { data: positions, isLoading: positionsLoading } = useReadContracts({
+    contracts: tokenIds.map(id => ({
+      address: "0xB7F724d6dDDFd008eFf5cc2834edDE5F9eF0d075" as `0x${string}`,
+      abi: NonfungiblePositionManager,
+      functionName: "positions",
+      args: [id],
+    })),
+    query: {
+      retry: 3,
+      retryDelay: 1500,
+      staleTime: 10000,
+    },
+  });
+console.log('positions',positions);
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error loading data</div>
   if (!data) return <div>No data available</div>
+
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

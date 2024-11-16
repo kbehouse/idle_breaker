@@ -63,7 +63,7 @@ export default function Web3Interface() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3 }}
-                  className="min-h-[300px]"
+                  className="min-h-[300px] max-h-[450px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-900 hover:scrollbar-thumb-gray-500"
                 >
                   {activeView === "liquidity" && <Liquidity />}
 
