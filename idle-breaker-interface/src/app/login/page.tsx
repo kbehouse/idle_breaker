@@ -1,5 +1,6 @@
 "use client";
 
+import BackgroundEffect from "./_components/BackgroundEffect";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -16,6 +17,7 @@ const LoginPage = () => {
   }, [isConnected]);
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <BackgroundEffect />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
