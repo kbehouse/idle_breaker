@@ -1,42 +1,65 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { useReadContract } from 'wagmi';
-import { useEffect } from 'react';
+import { useReadContract } from "wagmi";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatAmount } from "@/lib/utils";
 
-// ABI 只需要包含 saving_supply_amount 函数
 const ERC20SavingABI = [
   {
-    inputs: [],
+    inputs: [{ type: "address", name: "account" }],
     name: "deposits",
     outputs: [{ type: "uint256" }],
     stateMutability: "view",
-    type: "function"
-  }
+    type: "function",
+  },
+  {
+    inputs: [{ type: "address", name: "account" }],
+    name: "calculateInterest",
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
+
 const Lending = () => {
-  const result = useReadContract({
-    address: '0xf8915e6896FB575a95246793b150C56e2666dA11', // ERC20_SAVING address
+
+  const { data: depositAmount, isLoading } = useReadContract({
+    address: "0xf8915e6896FB575a95246793b150C56e2666dA11",
     abi: ERC20SavingABI,
-    functionName: 'deposits',
+    functionName: "deposits",
+    args: ["0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7"], // TODO: user address
+    query: {
+      retry: 3,
+      retryDelay: 1500,
+      staleTime: 10000,
+    },
   });
 
-  useEffect(() => {
-    if (result.data) {
-      console.log('Saving supply amount:', result.data); // BigInt
-    }
-    if (result.error) {
-      console.error('Error fetching saving supply amount:', result.error);
-    }
-  }, [result.data, result.error]);
-    
-  console.log('result',result);
+  const { data: interestAmount, isLoading: interestLoading } = useReadContract({
+    address: "0xf8915e6896FB575a95246793b150C56e2666dA11",
+    abi: ERC20SavingABI,
+    functionName: "calculateInterest",
+    args: ["0x914171a48aa2c306DD2D68c6810D6E2B4F4ACdc7"], // TODO: user address
+    query: {
+      retry: 3,
+      retryDelay: 1500,
+      staleTime: 10000,
+    },
+  });
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="bg-gradient-to-br from-blue-600 to-purple-600 text-white">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-2">Supply</h3>
-          <p className="text-3xl font-bold">$25,000</p>
+          {isLoading ? (
+            <Skeleton className="h-9 w-32 bg-white/20" />
+          ) : (
+            <p className="text-3xl font-bold">
+              {`$${formatAmount(depositAmount || 0n)}` || "-"}
+            </p>
+          )}
         </CardContent>
       </Card>
       <Card className="bg-gradient-to-br from-green-500 to-teal-500 text-white">
@@ -48,7 +71,11 @@ const Lending = () => {
       <Card className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-2">Interest</h3>
-          <p className="text-3xl font-bold">$30.69</p>
+          {interestLoading ? (
+            <Skeleton className="h-9 w-32 bg-white/20" />
+          ) : (
+            <p className="text-3xl font-bold">{`$${formatAmount(interestAmount || 0n)}` || "-"}</p>
+          )}
         </CardContent>
       </Card>
     </div>
